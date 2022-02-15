@@ -1,26 +1,50 @@
 import React, {FormEvent, useState} from 'react'
 import './Home.scss'
-import {Button, Col, Container, Form, Row, Table} from "react-bootstrap";
+import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import {Track} from "../../logic/objects";
-import {fetchApi, fetchUrl, REQUEST_URL} from "../../logic/requests";
+import {fetchUrl, REQUEST_URL} from "../../logic/requests";
 
-const originalListUrl = `${REQUEST_URL}/tracks/list?count=5`
+const originalListUrl = `${REQUEST_URL}/tracks/list`
 
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
-    const [nextUrl, setNextUrl] = useState(originalListUrl)
+    const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         // @ts-ignore
-        let search = event.target[0].value
-        console.log('Searching: ' + search);
+        let artist = event.target[0].value.trim()
+
+        // @ts-ignore
+        let track = event.target[1].value.trim()
+
+        console.log(`Searching artist: ${artist} track: ${track}`);
+
+        await searchTracks(artist, track)
     }
 
-    function loadTracks() {
+    function loadTracks(): Promise<any> {
         console.log('curr = ' + nextUrl);
-        fetchUrl(nextUrl)
+        return loadTracksFromUrl(nextUrl)
+    }
+
+    function searchTracks(artist: string, track: string): Promise<any> {
+        let urlQuery = new URLSearchParams([['count', '5']])
+
+        if (artist.length > 0) {
+            urlQuery.append('artist', artist)
+        }
+
+        if (track.length > 0) {
+            urlQuery.append('song', track)
+        }
+
+        return loadTracksFromUrl(`${originalListUrl}?${urlQuery}`, true)
+    }
+
+    function loadTracksFromUrl(url: string, overrideList: boolean = false): Promise<any> {
+        return fetchUrl(url)
             .then(async res => {
                 if (res.status != 200) {
                     console.log(`Erroneous status of ${res.status}: ${await res.json()}`)
@@ -32,7 +56,13 @@ export const Home = () => {
                 // @ts-ignore
                 setNextUrl(json['_links']['next'])
 
-                setTracks(old => [...old, ...json['tracks'].map((track: any) => Track.fromJSON(track))])
+                let tracks = json['tracks'].map((track: any) => Track.fromJSON(track))
+
+                if (overrideList) {
+                    setTracks(tracks)
+                } else {
+                    setTracks(old => [...old, ...tracks])
+                }
             })
     }
 
@@ -46,16 +76,24 @@ export const Home = () => {
                     <p>Filter:</p>
                     <Form onSubmit={e => handleSubmit(e)}>
                         <Row>
-                            <Form.Group as={Col} controlId="formGridCity">
-                                <Form.Label>Search</Form.Label>
-                                <Form.Control />
-                            </Form.Group>
+                            <Col xl={3}>
+                                <Form.Group as={Col} controlId="formGridCity">
+                                    <Form.Label>Artist</Form.Label>
+                                    <Form.Control/>
+                                </Form.Group>
+                            </Col>
+                            <Col xl={3}>
+                                <Form.Group as={Col} controlId="formGridCity2">
+                                    <Form.Label>Track</Form.Label>
+                                    <Form.Control/>
+                                </Form.Group>
+                            </Col>
                         </Row>
-                        <Row>
+                        <Col>
                             <Button variant="primary" type="submit">
-                                Submit
+                                Search
                             </Button>
-                        </Row>
+                        </Col>
                     </Form>
                 </Row>
                 <Row>
@@ -76,10 +114,12 @@ export const Home = () => {
                         </tbody>
                     </Table>
                 </Row>
-                <Row>
-                    <Button variant="secondary" type="submit" onClick={() => loadTracks()}>
-                        Show more
-                    </Button>
+                <Row className="justify-content-md-center">
+                    <Col xl={2}>
+                        <Button variant="secondary" type="submit" onClick={() => loadTracks()}>
+                            Show more
+                        </Button>
+                    </Col>
                 </Row>
             </Col>
         </Row>
