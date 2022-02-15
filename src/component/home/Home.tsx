@@ -1,14 +1,22 @@
-import React, {FormEvent, useState} from 'react'
+import React, {createRef, FormEvent, useState} from 'react'
 import './Home.scss'
 import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import {Track} from "../../logic/objects";
 import {fetchUrl, REQUEST_URL} from "../../logic/requests";
+import {DateRange, Range, RangeKeyDict} from 'react-date-range';
 
 const originalListUrl = `${REQUEST_URL}/tracks/list`
+
+const bruh: Range = {
+    startDate: new Date(),
+    endDate: new Date(),
+    key: 'range',
+}
 
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
+    const [range, setRange] = useState<Range>(bruh);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -87,6 +95,15 @@ export const Home = () => {
                                     <Form.Label>Track</Form.Label>
                                     <Form.Control/>
                                 </Form.Group>
+                            </Col>
+                            <Col xl={3}>
+                                <DateRange
+                                    ranges={[range]}
+                                    editableDateInputs={true}
+                                    moveRangeOnFirstSelection={false}
+                                    maxDate={new Date()}
+                                    onChange={range => setRange(range['range'])}
+                                />
                             </Col>
                         </Row>
                         <Col>
