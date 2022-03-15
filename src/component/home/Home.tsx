@@ -1,12 +1,12 @@
-import React, {createRef, FormEvent, Fragment, RefObject, useEffect, useState} from 'react'
+import React, {createRef, FormEvent, Fragment, useEffect, useState} from 'react'
 import './Home.scss'
 import {
     Button,
-    ButtonGroup,
     Col,
     Container,
     Form,
     FormControl,
+    InputGroup,
     Nav,
     Navbar,
     NavDropdown,
@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 import {Track} from "../../logic/objects";
 import {fetchUrl, REQUEST_URL} from "../../logic/requests";
-import {Range} from 'react-date-range';
+import {Calendar, Range} from 'react-date-range';
 import {getGroups} from "../../logic/groups";
 
 const originalListUrl = `${REQUEST_URL}/tracks/list`
@@ -30,7 +30,7 @@ export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
-    const [range, setRange] = useState<Range>(bruh);
+    const [date, setDate] = useState<Date>(new Date())
     const [groups, setGroups] = useState<string[]>([])
 
     // For editing
@@ -85,7 +85,7 @@ export const Home = () => {
         return fetchUrl(url)
             .then(async res => {
                 if (res.status != 200) {
-                    console.log(`Erroneous status of ${res.status}: ${await res.json()}`)
+                    console.error(`Erroneous status of ${res.status}: ${await res.json()}`)
                     return []
                 }
 
@@ -124,31 +124,68 @@ export const Home = () => {
     }
 
     function submitEdit(id: number) {
-        console.log(artistRef.current?.value);
-        console.log(titleRef.current?.value);
-        console.log(groupRef.current?.value);
+        let title = titleRef.current?.value ?? ''
+        let artist = artistRef.current?.value ?? ''
+        let group = groupRef.current?.value ?? ''
 
         // TODO: Updating time
-        // return fetchUrl('/tracks/update', undefined, {
-        //     method: 'PATCH',
-        //     body: JSON.stringify({
-        //         'id': id,
-        //
-        //     })
-        // })
+        return fetchUrl('/tracks/update', undefined, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                'id': id,
+                'title': title,
+                'artist': artist,
+                'group': group
+                // TODO: add time
+            })
+        }).then(async res => {
+            if (res.status != 200) {
+                console.error(`Erroneous status of ${res.status}: ${await res.json()}`)
+                return
+            }
+
+            setTracks(oldTracks => {
+                let editedTrack = oldTracks.find(track => track.id == id)
+                if (editedTrack == undefined) {
+                    console.error('Edited track not found!');
+                    return oldTracks
+                }
+
+                editedTrack.title = title
+                editedTrack.artist = artist
+                editedTrack.group = group
+                return oldTracks
+            })
+        })
     }
 
     function displayEditRow(track: Track): JSX.Element {
         return (
             <tr>
-                <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
+                <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/>
+                </td>
                 <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
                 <td>
                     <Form.Select ref={groupRef} defaultValue={track.group}>
                         {groups.map(group => <option value={group} selected={track.group == group}>{group}</option>)}
                     </Form.Select>
                 </td>
-                <td><FormControl className="form-control" name="play_time"/></td>
+                <td>
+                    <div className="date-time-wrapper">
+                        <Calendar className="calendar" date={date} onChange={setDate}/>
+                        <div className="time-wrapper">
+                            <InputGroup className="mt-2 time-selector">
+                                <FormControl type="number"/>
+                                <InputGroup.Text>:</InputGroup.Text>
+                                <FormControl type="number"/>
+                                <Form.Select>
+                                    <option value="am">AM</option>
+                                    <option value="pm">PM</option>
+                                </Form.Select>
+                            </InputGroup>
+                        </div>
+                    </div>
+                </td>
                 <td>
                     <Button variant="primary" size="sm" className="me-2" onClick={() => submitEdit(track.id)}>Update</Button>
                     <Button variant="danger" size="sm" onClick={() => setEditingTrack(undefined)}>Cancel</Button>
