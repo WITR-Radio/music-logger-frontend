@@ -8,9 +8,14 @@ export function fetchUrl(absolutePath: string, params?: string[][],
 
     let urlParams = new URLSearchParams(params)
 
+    let paramString = urlParams.toString()
+    if (paramString.length > 0) {
+        paramString = `?${paramString}`
+    }
+
     // params.append('underground', `${underground}`)
 
-    return fetch(`${absolutePath}${urlParams}`, appendHeaders(headers, init))
+    return fetch(`${absolutePath}${paramString}`, appendHeaders(headers, init))
 }
 
 export function fetchApi(path: string, params?: string[][],
