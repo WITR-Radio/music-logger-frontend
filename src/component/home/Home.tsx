@@ -17,14 +17,10 @@ import {Track} from "../../logic/objects";
 import {fetchUrl, REQUEST_URL} from "../../logic/requests";
 import {Calendar, Range} from 'react-date-range';
 import {getGroups} from "../../logic/groups";
+import {DateTimeChooser} from "../date_time_chooser/DateTimeChooser";
+import {formatDate, prettyFormatDate} from "../../logic/date_utils";
 
 const originalListUrl = `${REQUEST_URL}/tracks/list`
-
-const bruh: Range = {
-    startDate: new Date(),
-    endDate: new Date(),
-    key: 'range',
-}
 
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
@@ -114,9 +110,12 @@ export const Home = () => {
                 <td>{track.artist}</td>
                 <td>{track.title}</td>
                 <td>{track.group}</td>
-                <td>{track.time}</td>
+                <td>{prettyFormatDate(track.time)}</td>
                 <td>
-                    <Button variant="primary" size="sm" className="me-2" onClick={() => setEditingTrack(track)}>Edit</Button>
+                    <Button variant="primary" size="sm" className="me-2" onClick={() => {
+                        setDate(track.time)
+                        setEditingTrack(track);
+                    }}>Edit</Button>
                     <Button variant="danger" size="sm" onClick={() => deleteTrack(track)}>Delete</Button>
                 </td>
             </tr>
@@ -128,15 +127,14 @@ export const Home = () => {
         let artist = artistRef.current?.value ?? ''
         let group = groupRef.current?.value ?? ''
 
-        // TODO: Updating time
         return fetchUrl('/tracks/update', undefined, {
             method: 'PATCH',
             body: JSON.stringify({
                 'id': id,
                 'title': title,
                 'artist': artist,
-                'group': group
-                // TODO: add time
+                'group': group,
+                'time': formatDate(date)
             })
         }).then(async res => {
             if (res.status != 200) {
@@ -154,6 +152,7 @@ export const Home = () => {
                 editedTrack.title = title
                 editedTrack.artist = artist
                 editedTrack.group = group
+                editedTrack.time = date
                 return oldTracks
             })
         })
@@ -171,20 +170,7 @@ export const Home = () => {
                     </Form.Select>
                 </td>
                 <td>
-                    <div className="date-time-wrapper">
-                        <Calendar className="calendar" date={date} onChange={setDate}/>
-                        <div className="time-wrapper">
-                            <InputGroup className="mt-2 time-selector">
-                                <FormControl type="number"/>
-                                <InputGroup.Text>:</InputGroup.Text>
-                                <FormControl type="number"/>
-                                <Form.Select>
-                                    <option value="am">AM</option>
-                                    <option value="pm">PM</option>
-                                </Form.Select>
-                            </InputGroup>
-                        </div>
-                    </div>
+                    <DateTimeChooser date={date} onChange={setDate}/>
                 </td>
                 <td>
                     <Button variant="primary" size="sm" className="me-2" onClick={() => submitEdit(track.id)}>Update</Button>

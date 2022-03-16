@@ -20,11 +20,11 @@ export class Track {
     id: number
     artist: string
     title: string
-    time: string
+    time: Date
     group: string // This will be a value of getGroups
     type: Type
 
-    constructor(id: number, artist: string, title: string, time: string, group: string, type: Type) {
+    constructor(id: number, artist: string, title: string, time: Date, group: string, type: Type) {
         this.id = id;
         this.artist = artist;
         this.title = title;
@@ -34,6 +34,6 @@ export class Track {
     }
 
     static fromJSON(json: any): Track {
-        return new Track(json['id'], json['artist'], json['title'], json['time'], json['group'], typeFromName(json['type']))
+        return new Track(json['id'], json['artist'], json['title'], new Date(Date.parse(json['time'])), json['group'], typeFromName(json['type']))
     }
 }

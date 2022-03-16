@@ -1,0 +1,17 @@
+.DateTimeChooser {
+    display: inline-block;
+    margin-top: -1em;
+
+    .calendar {
+        width: fit-content;
+    }
+
+    .time-wrapper {
+        display: flex;
+
+        .time-selector {
+            flex-grow: 1;
+            width: 0;
+        }
+    }
+}
