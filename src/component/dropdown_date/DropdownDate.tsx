@@ -1,8 +1,8 @@
 import React, {useContext} from 'react'
 import './DropdownDate.scss'
-import SearchDateContext from "../SearchDate";
 import {DateTimeChooser} from "../date_time_chooser/DateTimeChooser";
 import {Card} from "react-bootstrap";
+import SearchDateContext from "../contexts/SearchDate";
 
 export const CustomToggle = React.forwardRef<HTMLDivElement>((props, ref) => {
     return (<Card className="DropdownDateToggle form-select"

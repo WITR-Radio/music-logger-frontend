@@ -1,6 +1,6 @@
 export const REQUEST_URL = 'http://localhost:8080'
 
-export function fetchUrl(absolutePath: string, params?: string[][],
+export function fetchUrl(absolutePath: string, params?: Record<string, string>,
                          init?: RequestInit | undefined): Promise<Response> {
     let headers: HeadersInit = init?.method == 'POST' ? {
         'Content-Type': 'application/json'
@@ -18,7 +18,7 @@ export function fetchUrl(absolutePath: string, params?: string[][],
     return fetch(`${absolutePath}${paramString}`, appendHeaders(headers, init))
 }
 
-export function fetchApi(path: string, params?: string[][],
+export function fetchApi(path: string, params?: Record<string, string>,
                          init?: RequestInit | undefined): Promise<Response> {
     return fetchUrl(`${REQUEST_URL}${path}`, params, init)
 }
