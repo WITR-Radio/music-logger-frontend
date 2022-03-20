@@ -54,12 +54,20 @@ export const DateTimeChooser = (props: DateTimeChooserProps) => {
         props.onChange(newDate)
     }
 
+    function processHour(hour: number) {
+        if (hour > 12) {
+            return hour - 12;
+        }
+
+        return hour;
+    }
+
     return (
         <div className="DateTimeChooser">
             <Calendar className="calendar" date={props.date} onChange={handleDate}/>
             <div className="time-wrapper">
-                <InputGroup className="mt-2 time-selector">
-                    <FormControl type="number" defaultValue={props.date.getHours()} onChange={handleHour} min="1" max="12"/>
+                <InputGroup className="mt-2 mx-2 time-selector">
+                    <FormControl type="number" defaultValue={processHour(props.date.getHours())} onChange={handleHour} min="1" max="12"/>
                     <InputGroup.Text>:</InputGroup.Text>
                     <FormControl type="number" defaultValue={props.date.getMinutes()} onChange={handleMinute} min="0" max="59"/>
                     <Form.Select defaultValue={am ? 'am' : 'pm'} onChange={handleAmPm}>

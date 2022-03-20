@@ -1,9 +1,9 @@
 import React, {createRef, FormEvent, Fragment, useEffect, useState} from 'react'
 import './Home.scss'
 import {
-    Button,
+    Button, Card,
     Col,
-    Container,
+    Container, Dropdown,
     Form,
     FormControl,
     InputGroup,
@@ -15,10 +15,12 @@ import {
 } from "react-bootstrap";
 import {Track} from "../../logic/objects";
 import {fetchUrl, REQUEST_URL} from "../../logic/requests";
-import {Calendar, Range} from 'react-date-range';
 import {getGroups} from "../../logic/groups";
 import {DateTimeChooser} from "../date_time_chooser/DateTimeChooser";
 import {formatDate, prettyFormatDate} from "../../logic/date_utils";
+import {CustomToggle, DropdownDate} from "../dropdown_date/DropdownDate";
+import SearchDateContext, {SearchDateState} from '../SearchDate';
+import {Simulate} from "react-dom/test-utils";
 
 const originalListUrl = `${REQUEST_URL}/tracks/list`
 
@@ -28,11 +30,17 @@ export const Home = () => {
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
     const [date, setDate] = useState<Date>(new Date())
     const [groups, setGroups] = useState<string[]>([])
+    const [startDate, setStartDate] = useState<Date | undefined>()
+    const [endDate, setEndDate] = useState<Date | undefined>()
 
-    // For editing
+    // TODO: Move editing row in a separate component maybe?
     let artistRef = createRef<HTMLInputElement>()
     let titleRef = createRef<HTMLInputElement>()
     let groupRef = createRef<HTMLSelectElement>()
+
+    // TODO: Move searching too maybe?
+    let searchArtistRef = createRef<HTMLInputElement>()
+    let searchTitleRef = createRef<HTMLInputElement>()
 
     useEffect(() => {
         getGroups(false).then(setGroups)
@@ -44,34 +52,27 @@ export const Home = () => {
         return <p>Loading</p>
     }
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        // @ts-ignore
-        let artist = event.target[0].value.trim()
-
-        // @ts-ignore
-        let track = event.target[1].value.trim()
-
-        console.log(`Searching artist: ${artist} track: ${track}`);
-
-        await searchTracks(artist, track)
-    }
-
     function loadTracks(): Promise<any> {
         console.log('curr = ' + nextUrl);
         return loadTracksFromUrl(nextUrl)
     }
 
-    function searchTracks(artist: string, track: string): Promise<any> {
+    function handleSearch(): Promise<any> {
         let urlQuery = new URLSearchParams([['count', '5']])
 
-        if (artist.length > 0) {
+        let artist = searchArtistRef.current?.value ?? ''
+        if (artist != '') {
             urlQuery.append('artist', artist)
         }
 
-        if (track.length > 0) {
-            urlQuery.append('song', track)
+        let title = searchTitleRef.current?.value ?? ''
+        if (title != '') {
+            urlQuery.append('song', title)
+        }
+
+        if (startDate != undefined && endDate != undefined) {
+            urlQuery.append('start', startDate.getTime().toString())
+            urlQuery.append('end', endDate.getTime().toString())
         }
 
         return loadTracksFromUrl(`${originalListUrl}?${urlQuery}`, true)
@@ -160,7 +161,7 @@ export const Home = () => {
 
     function displayEditRow(track: Track): JSX.Element {
         return (
-            <tr>
+            <tr className="edit-row">
                 <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/>
                 </td>
                 <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
@@ -169,7 +170,7 @@ export const Home = () => {
                         {groups.map(group => <option value={group} selected={track.group == group}>{group}</option>)}
                     </Form.Select>
                 </td>
-                <td>
+                <td className="date-time-col">
                     <DateTimeChooser date={date} onChange={setDate}/>
                 </td>
                 <td>
@@ -182,7 +183,7 @@ export const Home = () => {
 
     return (
         <Fragment>
-            <Navbar expand="lg" bg="dark">
+            <Navbar expand="lg" bg="dark" variant="dark">
                 <Container fluid>
                     <Navbar.Brand href="#">WITR Logger</Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav"/>
@@ -215,52 +216,51 @@ export const Home = () => {
                 </Container>
             </Navbar>
 
-            <Container>
-                {/*<div className="card card-body" id="search">
-                    <div className="row">
-                        <div className="col">
-                            <label htmlFor="dateSelect" className="col-form-label">Date</label>
-                            <select className="form-select" id="dateSelect">
-                                <option selected>Open this select menu</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
-                            </select>
-                        </div>
-                        <div className="col">
-                            <label htmlFor="dateSelect" className="col-form-label">Between</label>
-                            <div className="row g-3">
-                                <div className="col-6">
-                                    <select className="form-select" id="dateSelect">
-                                        <option selected>Open this select menu</option>
-                                        <option value="1">One</option>
-                                        <option value="2">Two</option>
-                                        <option value="3">Three</option>
-                                    </select>
-                                </div>
-                                <div className="col-6">
-                                    <select className="form-select" id="dateSelect">
-                                        <option selected>Open this select menu</option>
-                                        <option value="1">One</option>
-                                        <option value="2">Two</option>
-                                        <option value="3">Three</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col">
-                            <label htmlFor="artist" className="col-form-label">Artist</label>
-                            <input type="text" className="form-control" id="artist"/>
-                        </div>
-                        <div className="col">
-                            <label htmlFor="title" className="col-form-label">Title</label>
-                            <input type="text" className="form-control" id="title"/>
-                        </div>
-                    </div>
-                    <div className="adv-search-btn-box">
-                        <a href="#" className="btn btn-success"><i className="bi bi-search"></i> Search</a>
-                    </div>
-                </div>*/}
+            <Container className="pt-4">
+                <Card body>
+                    <Row>
+                        <Col>
+                            <Form.Label>Between</Form.Label>
+                            <Row className="g-3">
+                                <Col xs={6}>
+                                    <SearchDateContext.Provider value={{ date: startDate, setDate: setStartDate }}>
+                                        <Dropdown>
+                                            <Dropdown.Toggle as={CustomToggle}>{startDate == undefined ? 'Select a date' : prettyFormatDate(startDate)}</Dropdown.Toggle>
+
+                                            <Dropdown.Menu as={DropdownDate}>
+                                                <Dropdown.Item>One</Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </SearchDateContext.Provider>
+                                </Col>
+                                <Col xs={6}>
+                                    <SearchDateContext.Provider value={{ date: endDate, setDate: setEndDate }}>
+                                        <Dropdown>
+                                            <Dropdown.Toggle as={CustomToggle}>{endDate == undefined ? 'Select a date' : prettyFormatDate(endDate)}</Dropdown.Toggle>
+
+                                            <Dropdown.Menu as={DropdownDate}>
+                                                <Dropdown.Item>One</Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </SearchDateContext.Provider>
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Form.Group as={Col}>
+                            <Form.Label>Artist</Form.Label>
+                            <Form.Control ref={searchArtistRef} type="text"/>
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Title</Form.Label>
+                            <Form.Control ref={searchTitleRef} type="text"/>
+                        </Form.Group>
+                    </Row>
+                    <Row className="justify-content-md-center mt-3">
+                        <Col md="auto">
+                            <Button variant="success" onClick={() => handleSearch()}><i className="bi bi-search"></i> Search</Button>
+                        </Col>
+                    </Row>
+                </Card>
 
                 <div className="button-bar">
                     <a className="btn btn-primary">

@@ -1,9 +1,19 @@
 .DateTimeChooser {
-    display: inline-block;
-    margin-top: -1em;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
 
     .calendar {
         width: fit-content;
+        margin-top: -8px;
+
+        .rdrMonthAndYearWrapper {
+            margin-top: -10px
+        }
+
+        .rdrMonth {
+            padding-bottom: 1em;
+        }
     }
 
     .time-wrapper {
