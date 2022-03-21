@@ -18,7 +18,7 @@ export const Search = (props: SearchProps) => {
     const searchTitleRef = createRef<HTMLInputElement>()
 
     function handleSearch(): Promise<any> {
-        let urlQuery = new URLSearchParams([['count', '5']])
+        let urlQuery = new URLSearchParams({count: '5'})
 
         let artist = searchArtistRef.current?.value ?? ''
         if (artist != '') {

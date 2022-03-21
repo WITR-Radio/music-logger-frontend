@@ -6,12 +6,14 @@ import {fetchApi, fetchUrl, REQUEST_URL} from "../../logic/requests";
 import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
+import {ExportModal} from "./export_modal/ExportModal";
 
 export const originalListUrl = `${REQUEST_URL}/tracks/list`
 
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
+    const [exporting, setExporting] = useState<boolean>(false)
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
 
     useEffect(() => {
@@ -81,6 +83,8 @@ export const Home = () => {
 
     return (
         <Fragment>
+            <ExportModal show={exporting} onHide={() => setExporting(false)}/>
+
             <Navbar expand="lg" bg="dark" variant="dark">
                 <Container fluid>
                     <Navbar.Brand href="#">WITR Logger</Navbar.Brand>
@@ -92,7 +96,7 @@ export const Home = () => {
                         <Nav.Link href="#">UDG Playlist</Nav.Link>
                     </Nav>
                     <Nav>
-                        <Nav.Link>Export</Nav.Link>
+                        <Nav.Link onClick={() => setExporting(true)}>Export</Nav.Link>
                     </Nav>
                 </Container>
             </Navbar>

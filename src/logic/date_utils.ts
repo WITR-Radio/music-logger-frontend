@@ -37,5 +37,5 @@ export function formatDate(date: Date): string {
 export function prettyFormatDate(date: Date): string {
     let am = date.getHours() < 12
     let hours = date.getHours() - (!am ? 12 : 0)
-    return `${date.getMonth() + 1}/${date.getDay()}/${date.getFullYear()} ${hours}:${padNum(date.getMinutes(), 2)} ${am ? 'AM' : 'PM'}`
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${hours}:${padNum(date.getMinutes(), 2)} ${am ? 'AM' : 'PM'}`
 }
