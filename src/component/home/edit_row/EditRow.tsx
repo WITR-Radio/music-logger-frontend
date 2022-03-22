@@ -35,7 +35,8 @@ export const EditRow = (props: EditRowProps) => {
                 'title': title,
                 'artist': artist,
                 'group': group,
-                'time': formatDate(date)
+                // 'time': formatDate(date)
+                'time': date.getTime()
             })
         }).then(async res => {
             if (res.status != 200) {
@@ -61,8 +62,7 @@ export const EditRow = (props: EditRowProps) => {
 
     return (
         <tr className="EditRow">
-            <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/>
-            </td>
+            <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
             <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
             <td>
                 <Form.Select ref={groupRef} defaultValue={track.group}>

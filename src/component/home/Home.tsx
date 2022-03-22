@@ -7,14 +7,17 @@ import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
+import {AddRow} from "./add_row/AddRow";
 
 export const originalListUrl = `${REQUEST_URL}/tracks/list`
 
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
+    const [addingRows, setAddingRows] = useState<number[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
+    let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
         loadTracks()
@@ -81,6 +84,27 @@ export const Home = () => {
         return <EditRow track={track} stopEditing={() => setEditingTrack(undefined)} updateTracks={setTracks}/>
     }
 
+    function removeAddRow(id: number) {
+        setAddingRows(old => old.filter(i => i != id))
+    }
+
+    function addTrack(addRowId: number, track: Track | undefined) {
+        if (track == undefined) {
+            removeAddRow(addRowId)
+            return
+        }
+
+        setTracks(old => [track, ...old])
+    }
+
+    function onClickAddSong() {
+        setAddingRows(old => [addRowId++, ...old])
+    }
+
+    function onClickAddEvent() {
+
+    }
+
     return (
         <Fragment>
             <ExportModal show={exporting} onHide={() => setExporting(false)}/>
@@ -88,9 +112,6 @@ export const Home = () => {
             <Navbar expand="lg" bg="dark" variant="dark">
                 <Container fluid>
                     <Navbar.Brand href="#">WITR Logger</Navbar.Brand>
-                    {/*<button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">*/}
-                    {/*    <span className="navbar-toggler-icon"></span>*/}
-                    {/*</button>*/}
                     <Nav className="me-auto">
                         <Nav.Link href="#">FM Playlist</Nav.Link>
                         <Nav.Link href="#">UDG Playlist</Nav.Link>
@@ -105,12 +126,12 @@ export const Home = () => {
                 <Search loadTracks={url => loadTracksFromUrl(url, true)}/>
 
                 <div className="button-bar">
-                    <a className="btn btn-primary">
+                    <Button variant="primary" onClick={() => onClickAddSong()}>
                         <i className="bi bi-music-note-beamed"></i> Add Song
-                    </a>
-                    <a className="btn btn-info">
+                    </Button>
+                    <Button variant="info" onClick={() => onClickAddEvent()}>
                         <i className="bi bi-calendar-event-fill"></i> Add Event
-                    </a>
+                    </Button>
 
                 </div>
 
@@ -125,27 +146,8 @@ export const Home = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td><FormControl className="form-control" name="artist"/></td>
-                        <td><FormControl className="form-control" name="title"/></td>
-                        <td>
-                            <select className="form-select" id="dateSelect">
-                                <option selected>Select Group</option>
-                                <option value="1">Rotation</option>
-                                <option value="2">New Bin</option>
-                                <option value="2">Library</option>
-                                <option value="3">Specialty Show</option>
-                            </select>
-                        </td>
-                        <td><FormControl className="form-control" name="play_time"/></td>
-                        <td>
-                            <div>
-                                <Button variant="success" size="sm" className="me-2">Add</Button>
-                                <Button variant="danger" size="sm">Cancel</Button>
-                            </div>
-                        </td>
-                    </tr>
-                    {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
+                        {addingRows.map(i => <AddRow id={i} removeRow={() => removeAddRow(i)} addTrack={(track) => addTrack(i, track)}/>)}
+                        {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
                     </tbody>
                 </Table>
                 <Row className="justify-content-md-center">
