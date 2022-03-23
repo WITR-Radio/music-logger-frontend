@@ -36,4 +36,8 @@ export class Track {
     static fromJSON(json: any): Track {
         return new Track(json['id'], json['artist'], json['title'], new Date(Date.parse(json['time'])), json['group'], typeFromName(json['type']))
     }
+
+    isEvent(): boolean {
+        return this.group == 'Event'
+    }
 }

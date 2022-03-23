@@ -1,14 +1,14 @@
-import React, {createRef, useContext, useState} from 'react'
+import React, {createRef, Fragment, useContext, useState} from 'react'
 import './AddRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
 import {Track} from "../../../logic/objects";
 import {fetchApi} from "../../../logic/requests";
-import {formatDate} from "../../../logic/date_utils";
 
 interface AddRowProps {
     id: number
+    event: boolean
     removeRow: () => void
     addTrack: (track: Track | undefined) => void
 }
@@ -31,7 +31,7 @@ export const AddRow = (props: AddRowProps) => {
             body: JSON.stringify({
                 'title': title,
                 'artist': artist,
-                'group': group,
+                'group': props.event ? 'Event' : group,
                 'time': date.getTime()
             })
         }).then(async res => {
@@ -46,19 +46,23 @@ export const AddRow = (props: AddRowProps) => {
 
     return (
         <tr className="AddRow">
-            <td><FormControl ref={artistRef} className="form-control"/></td>
-            <td><FormControl ref={titleRef} className="form-control"/></td>
-            <td>
-                <Form.Select ref={groupRef}>
-                    {groups.map((group, i) => <option selected={i == 0} value={group}>{group}</option>)}
-                </Form.Select>
-            </td>
+            <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} className="form-control"/></td>
+            {!props.event && <Fragment>
+                <td><FormControl ref={titleRef} className="form-control"/></td>
+                <td>
+                    <Form.Select ref={groupRef} defaultValue={groups[0]}>
+                        {groups.map(group => <option value={group}>{group}</option>)}
+                    </Form.Select>
+                </td>
+            </Fragment>}
             <td className="date-time-col">
                 <DateTimeChooser date={date} onChange={setDate}/>
             </td>
             <td>
-                <Button variant="success" size="sm" className="me-2" onClick={() => submitAdd()}>Add</Button>
-                <Button variant="danger" size="sm" onClick={() => props.addTrack(undefined)}>Cancel</Button>
+                <div className="d-flex justify-content-end">
+                    <Button variant="success" size="sm" className="me-2" onClick={() => submitAdd()}>Add</Button>
+                    <Button variant="danger" size="sm" onClick={() => props.addTrack(undefined)}>Cancel</Button>
+                </div>
             </td>
         </tr>
     )

@@ -38,8 +38,15 @@ export const Search = (props: SearchProps) => {
         return props.loadTracks(`${originalListUrl}?${urlQuery}`)
     }
 
+    function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+        if (e.key == 'Enter') {
+            e.preventDefault()
+            handleSearch()
+        }
+    }
+
     return (
-        <Card body className="Search">
+        <Card body onKeyDown={e => handleKeyDown(e)}>
             <Row>
                 <Col>
                     <Form.Label>Between</Form.Label>

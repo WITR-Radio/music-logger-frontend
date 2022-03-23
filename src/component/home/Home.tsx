@@ -8,12 +8,18 @@ import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
 import {AddRow} from "./add_row/AddRow";
+import {getTableColor} from "../contexts/Groups";
 
 export const originalListUrl = `${REQUEST_URL}/tracks/list`
 
+type AddRowInfo = {
+    id: number
+    event: boolean
+}
+
 export const Home = () => {
     const [tracks, setTracks] = useState<Track[]>([])
-    const [addingRows, setAddingRows] = useState<number[]>([]) // A list of AddRow IDs
+    const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
@@ -65,16 +71,20 @@ export const Home = () => {
 
     function displayRow(track: Track): JSX.Element {
         return (
-            <tr> {/* className="table-warning" */}
-                <td>{track.artist}</td>
-                <td>{track.title}</td>
-                <td>{track.group}</td>
+            <tr className={getTableColor(track.group)}>
+                <td colSpan={track.isEvent() ? 3 : 1}>{track.artist}</td>
+                {!track.isEvent() && <Fragment>
+                    <td>{track.title}</td>
+                    <td>{track.group}</td>
+                </Fragment>}
                 <td>{prettyFormatDate(track.time)}</td>
                 <td>
-                    <Button variant="primary" size="sm" className="me-2" onClick={() => {
-                        setEditingTrack(track);
-                    }}>Edit</Button>
-                    <Button variant="danger" size="sm" onClick={() => deleteTrack(track)}>Delete</Button>
+                    <div className="d-flex justify-content-end">
+                        <Button variant="primary" size="sm" className="me-2" onClick={() => {
+                            setEditingTrack(track);
+                        }}>Edit</Button>
+                        <Button variant="danger" size="sm" onClick={() => deleteTrack(track)}>Delete</Button>
+                    </div>
                 </td>
             </tr>
         )
@@ -85,7 +95,7 @@ export const Home = () => {
     }
 
     function removeAddRow(id: number) {
-        setAddingRows(old => old.filter(i => i != id))
+        setAddingRows(old => old.filter(i => i.id != id))
     }
 
     function addTrack(addRowId: number, track: Track | undefined) {
@@ -97,12 +107,8 @@ export const Home = () => {
         setTracks(old => [track, ...old])
     }
 
-    function onClickAddSong() {
-        setAddingRows(old => [addRowId++, ...old])
-    }
-
-    function onClickAddEvent() {
-
+    function onClickAdd(event: boolean) {
+        setAddingRows(old => [{id: addRowId++, event: event}, ...old])
     }
 
     return (
@@ -125,11 +131,11 @@ export const Home = () => {
             <Container className="pt-4">
                 <Search loadTracks={url => loadTracksFromUrl(url, true)}/>
 
-                <div className="button-bar">
-                    <Button variant="primary" onClick={() => onClickAddSong()}>
+                <div className="justify-content-md-center d-flex my-3">
+                    <Button className="me-2" variant="primary" onClick={() => onClickAdd(false)}>
                         <i className="bi bi-music-note-beamed"></i> Add Song
                     </Button>
-                    <Button variant="info" onClick={() => onClickAddEvent()}>
+                    <Button variant="info" onClick={() => onClickAdd(true)}>
                         <i className="bi bi-calendar-event-fill"></i> Add Event
                     </Button>
 
@@ -146,11 +152,11 @@ export const Home = () => {
                     </tr>
                     </thead>
                     <tbody>
-                        {addingRows.map(i => <AddRow id={i} removeRow={() => removeAddRow(i)} addTrack={(track) => addTrack(i, track)}/>)}
+                        {addingRows.map(i => <AddRow id={i.id} event={i.event} removeRow={() => removeAddRow(i.id)} addTrack={(track) => addTrack(i.id, track)}/>)}
                         {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
                     </tbody>
                 </Table>
-                <Row className="justify-content-md-center">
+                <Row className="justify-content-md-center mb-4">
                     <Col md="auto">
                         <Button variant="secondary" onClick={() => loadTracks()}>Load More</Button>
                     </Col>

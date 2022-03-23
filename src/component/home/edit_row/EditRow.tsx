@@ -1,11 +1,10 @@
-import React, {createRef, useContext, useState} from 'react'
+import React, {createRef, Fragment, useContext, useState} from 'react'
 import './EditRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
 import {Track} from "../../../logic/objects";
 import {fetchApi} from "../../../logic/requests";
-import {formatDate} from "../../../logic/date_utils";
 
 interface EditRowProps {
     track: Track
@@ -33,9 +32,10 @@ export const EditRow = (props: EditRowProps) => {
             body: JSON.stringify({
                 'id': id,
                 'title': title,
-                'artist': artist,
-                'group': group,
-                // 'time': formatDate(date)
+                ...(!track.isEvent() && {
+                    'artist': artist,
+                    'group': group
+                }),
                 'time': date.getTime()
             })
         }).then(async res => {
@@ -62,19 +62,23 @@ export const EditRow = (props: EditRowProps) => {
 
     return (
         <tr className="EditRow">
-            <td><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
-            <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
-            <td>
-                <Form.Select ref={groupRef} defaultValue={track.group}>
-                    {groups.map(group => <option value={group} selected={track.group == group}>{group}</option>)}
-                </Form.Select>
-            </td>
+            <td colSpan={track.isEvent() ? 3 : 1}><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
+            {!track.isEvent() && <Fragment>
+                <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
+                <td>
+                    <Form.Select ref={groupRef} defaultValue={track.group}>
+                        {groups.map(group => <option value={group}>{group}</option>)}
+                    </Form.Select>
+                </td>
+            </Fragment>}
             <td className="date-time-col">
                 <DateTimeChooser date={date} onChange={setDate}/>
             </td>
             <td>
-                <Button variant="primary" size="sm" className="me-2" onClick={() => submitEdit(track.id)}>Update</Button>
-                <Button variant="danger" size="sm" onClick={() => props.stopEditing()}>Cancel</Button>
+                <div className="d-flex justify-content-end">
+                    <Button variant="primary" size="sm" className="me-2" onClick={() => submitEdit(track.id)}>Update</Button>
+                    <Button variant="danger" size="sm" onClick={() => props.stopEditing()}>Cancel</Button>
+                </div>
             </td>
         </tr>
     )
