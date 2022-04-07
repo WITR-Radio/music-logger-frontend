@@ -17,12 +17,16 @@ type AddRowInfo = {
     event: boolean
 }
 
-export const Home = () => {
+interface HomeProps {
+    underground: boolean
+}
+
+export const Home = (props: HomeProps) => {
     const [tracks, setTracks] = useState<Track[]>([])
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
-    const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5`)
+    const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5&underground=${props.underground}`)
     let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
@@ -57,7 +61,7 @@ export const Home = () => {
     }
 
     function deleteTrack(track: Track) {
-        return fetchApi('/tracks/remove', {id: track.id.toString(), underground: 'false'}, {
+        return fetchApi('/tracks/delete', {id: track.id.toString(), underground: `${props.underground}`}, {
             method: 'DELETE'
         }).then(async res => {
             if (res.status != 200) {
@@ -71,7 +75,7 @@ export const Home = () => {
 
     function displayRow(track: Track): JSX.Element {
         return (
-            <tr className={getTableColor(track.group)}>
+            <tr key={track.id} className={`${getTableColor(track.group)} align-middle`}>
                 <td colSpan={track.isEvent() ? 3 : 1}>{track.artist}</td>
                 {!track.isEvent() && <Fragment>
                     <td>{track.title}</td>
@@ -91,7 +95,7 @@ export const Home = () => {
     }
 
     function displayEditRow(track: Track): JSX.Element {
-        return <EditRow track={track} stopEditing={() => setEditingTrack(undefined)} updateTracks={setTracks}/>
+        return <EditRow key={track.id} track={track} underground={props.underground} stopEditing={() => setEditingTrack(undefined)} updateTracks={setTracks}/>
     }
 
     function removeAddRow(id: number) {
@@ -115,12 +119,12 @@ export const Home = () => {
         <Fragment>
             <ExportModal show={exporting} onHide={() => setExporting(false)}/>
 
-            <Navbar expand="lg" bg="dark" variant="dark">
+            <Navbar bg="dark" variant="dark">
                 <Container fluid>
                     <Navbar.Brand href="#">WITR Logger</Navbar.Brand>
                     <Nav className="me-auto">
-                        <Nav.Link href="#">FM Playlist</Nav.Link>
-                        <Nav.Link href="#">UDG Playlist</Nav.Link>
+                        <Nav.Link href="/" active={!props.underground}>FM Playlist</Nav.Link>
+                        <Nav.Link href="/underground" active={props.underground}>UDG Playlist</Nav.Link>
                     </Nav>
                     <Nav>
                         <Nav.Link onClick={() => setExporting(true)}>Export</Nav.Link>
@@ -129,6 +133,10 @@ export const Home = () => {
             </Navbar>
 
             <Container className="pt-4">
+                <Container className="text-center mb-4">
+                    <h1>{props.underground ? 'Underground' : 'FM'} Log</h1>
+                </Container>
+
                 <Search loadTracks={url => loadTracksFromUrl(url, true)}/>
 
                 <div className="justify-content-md-center d-flex my-3">
@@ -152,7 +160,7 @@ export const Home = () => {
                     </tr>
                     </thead>
                     <tbody>
-                        {addingRows.map(i => <AddRow id={i.id} event={i.event} removeRow={() => removeAddRow(i.id)} addTrack={(track) => addTrack(i.id, track)}/>)}
+                        {addingRows.map(i => <AddRow key={i.id} id={i.id} event={i.event} underground={props.underground} removeRow={() => removeAddRow(i.id)} addTrack={(track) => addTrack(i.id, track)}/>)}
                         {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
                     </tbody>
                 </Table>

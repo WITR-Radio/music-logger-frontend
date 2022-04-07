@@ -47,7 +47,7 @@ export const Search = (props: SearchProps) => {
 
     return (
         <Card body onKeyDown={e => handleKeyDown(e)}>
-            <Row>
+            <Row className="flex-lg-row flex-column">
                 <Col>
                     <Form.Label>Between</Form.Label>
                     <Row className="g-3">

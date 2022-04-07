@@ -8,6 +8,7 @@ import {fetchApi} from "../../../logic/requests";
 
 interface EditRowProps {
     track: Track
+    underground: boolean
     updateTracks: (foo: (oldTracks: Track[]) => Track[]) => void
     stopEditing: () => void
 }
@@ -27,7 +28,7 @@ export const EditRow = (props: EditRowProps) => {
         let artist = artistRef.current?.value ?? ''
         let group = groupRef.current?.value ?? ''
 
-        return fetchApi('/tracks/update', undefined, {
+        return fetchApi('/tracks/update', {underground: `${props.underground}`}, {
             method: 'PATCH',
             body: JSON.stringify({
                 'id': id,
@@ -61,7 +62,7 @@ export const EditRow = (props: EditRowProps) => {
     }
 
     return (
-        <tr className="EditRow">
+        <tr key={props.track.id} className="EditRow">
             <td colSpan={track.isEvent() ? 3 : 1}><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
             {!track.isEvent() && <Fragment>
                 <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>

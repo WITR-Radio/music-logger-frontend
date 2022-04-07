@@ -1,4 +1,4 @@
-export const REQUEST_URL = 'http://localhost:8080'
+export const REQUEST_URL = process.env.API_URL
 
 export function fetchUrl(absolutePath: string, params?: Record<string, string>,
                          init?: RequestInit | undefined): Promise<Response> {
@@ -12,8 +12,6 @@ export function fetchUrl(absolutePath: string, params?: Record<string, string>,
     if (paramString.length > 0) {
         paramString = `?${paramString}`
     }
-
-    // params.append('underground', `${underground}`)
 
     return fetch(`${absolutePath}${paramString}`, appendHeaders(headers, init))
 }

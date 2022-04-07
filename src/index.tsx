@@ -4,13 +4,16 @@ import './index.scss';
 import reportWebVitals from './reportWebVitals';
 import App from "./component/App";
 import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
+import 'react-date-range/dist/theme/default.css';
+import {BrowserRouter} from "react-router-dom"; // theme css file
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+    <React.StrictMode>
+        <BrowserRouter>
+            <App/>
+        </BrowserRouter>
+    </React.StrictMode>,
+    document.getElementById('root')
 );
 
 // If you want to start measuring performance in your app, pass a function

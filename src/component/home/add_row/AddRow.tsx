@@ -9,6 +9,7 @@ import {fetchApi} from "../../../logic/requests";
 interface AddRowProps {
     id: number
     event: boolean
+    underground: boolean
     removeRow: () => void
     addTrack: (track: Track | undefined) => void
 }
@@ -26,7 +27,7 @@ export const AddRow = (props: AddRowProps) => {
         let artist = artistRef.current?.value ?? ''
         let group = groupRef.current?.value ?? ''
 
-        return fetchApi('/tracks/add', undefined, {
+        return fetchApi('/tracks/add', {underground: `${props.underground}`}, {
             method: 'POST',
             body: JSON.stringify({
                 'title': title,
@@ -45,13 +46,13 @@ export const AddRow = (props: AddRowProps) => {
     }
 
     return (
-        <tr className="AddRow">
+        <tr key={props.id} className="AddRow">
             <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} className="form-control"/></td>
             {!props.event && <Fragment>
                 <td><FormControl ref={titleRef} className="form-control"/></td>
                 <td>
                     <Form.Select ref={groupRef} defaultValue={groups[0]}>
-                        {groups.map(group => <option value={group}>{group}</option>)}
+                        {groups.map(group => <option key={group} value={group}>{group}</option>)}
                     </Form.Select>
                 </td>
             </Fragment>}
