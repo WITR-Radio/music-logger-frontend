@@ -26,10 +26,28 @@ export const Home = (props: HomeProps) => {
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
+    const [searching, setSearching] = useState<boolean>(false)
     const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5&underground=${props.underground}`)
     let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
+        try {
+
+            const webSocket = new WebSocket("ws://localhost:5000/api/tracks/stream");
+
+            webSocket.onmessage = (event: MessageEvent) => {
+                if (!searching) {
+                    addTrack(0, Track.fromJSON(JSON.parse(event.data)))
+                }
+            };
+
+            webSocket.onerror = (error) => {
+                console.log(error);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
         loadTracks()
     }, [])
 
@@ -37,7 +55,8 @@ export const Home = (props: HomeProps) => {
         return loadTracksFromUrl(nextUrl)
     }
 
-    function loadTracksFromUrl(url: string, overrideList: boolean = false): Promise<any> {
+    function loadTracksFromUrl(url: string, overrideList: boolean = false, searching: boolean = false): Promise<any> {
+        setSearching(searching)
         return fetchUrl(url)
             .then(async res => {
                 if (res.status != 200) {
@@ -84,6 +103,7 @@ export const Home = (props: HomeProps) => {
                 <td>{prettyFormatDate(track.time)}</td>
                 <td>
                     <div className="d-flex justify-content-end">
+                        {track.streaming.map(link => <a key={link.link} className="btn btn-outline-success me-2" href={link.link} target="_blank" rel="noreferrer" title="Spotify Link">Spotify</a>)}
                         <Button variant="primary" size="sm" className="me-2" onClick={() => {
                             setEditingTrack(track);
                         }}>Edit</Button>
@@ -108,7 +128,14 @@ export const Home = (props: HomeProps) => {
             return
         }
 
-        setTracks(old => [track, ...old])
+        // Don't add if a duplicate
+        setTracks(old => {
+            if (old.findIndex(t => t.id == track.id) === -1) {
+                return [track, ...old]
+            } else {
+                return old
+            }
+        })
     }
 
     function onClickAdd(event: boolean) {
@@ -134,10 +161,10 @@ export const Home = (props: HomeProps) => {
 
             <Container className="pt-4">
                 <Container className="text-center mb-4">
-                    <h1>{props.underground ? 'Underground' : 'FM'} Log</h1>
+                    <h1>{props.underground ? 'Underground' : 'FM'} Playlist</h1>
                 </Container>
 
-                <Search loadTracks={url => loadTracksFromUrl(url, true)}/>
+                <Search loadTracks={(url, searching) => loadTracksFromUrl(url, true, searching)}/>
 
                 <div className="justify-content-md-center d-flex my-3">
                     <Button className="me-2" variant="primary" onClick={() => onClickAdd(false)}>

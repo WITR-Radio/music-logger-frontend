@@ -7,7 +7,15 @@ import {prettyFormatDate} from "../../../logic/date_utils";
 import {originalListUrl} from "../Home";
 
 interface SearchProps {
-    loadTracks: (url: string) => Promise<any>
+
+    /**
+     * Loads tracks in the homepage with the given URL. If anything is being searched, `searching` is true. This is
+     * used for auto-updating tracks.
+     *
+     * @param url The full URL of the track listing
+     * @param searching If anything is being searched (false for default listing)
+     */
+    loadTracks: (url: string, searching: boolean) => Promise<any>
 }
 
 export const Search = (props: SearchProps) => {
@@ -19,23 +27,27 @@ export const Search = (props: SearchProps) => {
 
     function handleSearch(): Promise<any> {
         let urlQuery = new URLSearchParams({count: '5'})
+        let searching = false
 
         let artist = searchArtistRef.current?.value ?? ''
         if (artist != '') {
+            searching = true
             urlQuery.append('artist', artist)
         }
 
         let title = searchTitleRef.current?.value ?? ''
         if (title != '') {
+            searching = true
             urlQuery.append('song', title)
         }
 
         if (startDate != undefined && endDate != undefined) {
+            searching = true
             urlQuery.append('start', startDate.getTime().toString())
             urlQuery.append('end', endDate.getTime().toString())
         }
 
-        return props.loadTracks(`${originalListUrl}?${urlQuery}`)
+        return props.loadTracks(`${originalListUrl}?${urlQuery}`, searching)
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
