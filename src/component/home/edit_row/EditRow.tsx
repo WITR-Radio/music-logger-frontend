@@ -3,8 +3,7 @@ import './EditRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
-import {fetchApi} from "../../../logic/requests";
-import {Track} from "music-logger-service";
+import {Track, TrackContext} from "music-logger-service";
 
 interface EditRowProps {
     track: Track
@@ -22,43 +21,14 @@ export const EditRow = (props: EditRowProps) => {
     const [date, setDate] = useState<Date>(track.time)
 
     const groups = useContext(GroupsContext)
+    const {trackHandler} = useContext(TrackContext)
 
     function submitEdit(id: number) {
         let title = titleRef.current?.value ?? ''
         let artist = artistRef.current?.value ?? ''
         let group = groupRef.current?.value ?? ''
 
-        return fetchApi('/tracks/update', {underground: `${props.underground}`}, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                'id': id,
-                'title': title,
-                ...(!track.isEvent() && {
-                    'artist': artist,
-                    'group': group
-                }),
-                'time': date.getTime()
-            })
-        }).then(async res => {
-            if (res.status != 200) {
-                console.error(`[tracks/update] Erroneous status of ${res.status}: ${await res.json()}`)
-                return
-            }
-
-            props.updateTracks((oldTracks: Track[]) => {
-                let editedTrack = oldTracks.find(track => track.id == id)
-                if (editedTrack == undefined) {
-                    console.error('Edited track not found!');
-                    return oldTracks
-                }
-
-                editedTrack.title = title
-                editedTrack.artist = artist
-                editedTrack.group = group
-                editedTrack.time = date
-                return oldTracks
-            })
-        }).finally(() => props.stopEditing())
+        trackHandler.updateTrack(id, track, title, artist, group, date)
     }
 
     return (

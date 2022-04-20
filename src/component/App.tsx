@@ -1,14 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Home} from "./home/Home";
-import GroupsContext, {getGroups} from "./contexts/Groups";
+import GroupsContext from "./contexts/Groups";
 import {Route, Routes} from 'react-router';
+import {getGroups} from "music-logger-service";
+
+export const REQUEST_URL = process.env.REACT_APP_API_URL ?? ''
+export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL ?? ''
+export const TRACKS_PER_PAGE = parseInt(process.env.REACT_APP_TRACKS_PER_PAGE ?? '20')
 
 function App() {
     const [groups, setGroups] = useState<string[]>([])
 
     useEffect(() => {
-        getGroups(false).then(setGroups)
+        getGroups(REQUEST_URL, false).then(setGroups)
     }, [])
 
     if (groups.length == 0) {

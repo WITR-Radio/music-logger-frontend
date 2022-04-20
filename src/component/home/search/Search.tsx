@@ -4,13 +4,13 @@ import {Button, Card, Col, Dropdown, Form, Row} from "react-bootstrap";
 import SearchDateContext from "../../contexts/SearchDate";
 import {CustomToggle, DropdownDate} from "../../dropdown_date/DropdownDate";
 import {prettyFormatDate} from "../../../logic/date_utils";
-import {TrackHandlerContext} from 'music-logger-service';
+import {TrackContext} from 'music-logger-service';
 
 export const Search = () => {
     const [startDate, setStartDate] = useState<Date | undefined>()
     const [endDate, setEndDate] = useState<Date | undefined>()
 
-    const trackHandler = useContext(TrackHandlerContext)
+    const {trackHandler} = useContext(TrackContext)
 
     const searchArtistRef = createRef<HTMLInputElement>()
     const searchTitleRef = createRef<HTMLInputElement>()

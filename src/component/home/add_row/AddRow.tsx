@@ -3,7 +3,7 @@ import './AddRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
-import {TrackHandlerContext} from "music-logger-service";
+import {TrackContext} from "music-logger-service";
 
 interface AddRowProps {
     id: number
@@ -18,7 +18,7 @@ export const AddRow = (props: AddRowProps) => {
     const [date, setDate] = useState<Date>(new Date())
 
     const groups = useContext(GroupsContext)
-    const trackHandler = useContext(TrackHandlerContext)
+    const {trackHandler} = useContext(TrackContext)
 
     function submitAdd(): void {
         trackHandler.submitAdd(titleRef.current?.value, artistRef.current?.value, groupRef.current?.value, date, props.event)

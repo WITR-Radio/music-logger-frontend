@@ -1,14 +1,14 @@
 import React, {Fragment, useEffect, useState} from 'react'
 import './Home.scss'
 import {Button, Col, Container, FormControl, Nav, Navbar, Row, Table} from "react-bootstrap";
-import {REQUEST_URL, WEBSOCKET_URL} from "../../logic/requests";
 import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
 import {AddRow} from "./add_row/AddRow";
 import {getTableColor} from "../contexts/Groups";
-import {Track, TrackHandler, TrackHandlerContext} from "music-logger-service";
+import {Track, TrackHandler, TrackContext, TrackReceiver} from "music-logger-service";
+import {REQUEST_URL, TRACKS_PER_PAGE, WEBSOCKET_URL} from "../App";
 
 type AddRowInfo = {
     id: number
@@ -24,11 +24,17 @@ export const Home = (props: HomeProps) => {
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
-    const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, WEBSOCKET_URL))
+    const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, TRACKS_PER_PAGE))
+    const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, track => {
+        if (!trackHandler.searching) {
+            trackHandler.manualAddTrack(track)
+        }
+    }))
+
     let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
-        trackHandler.connectWebsocket()
+        trackReceiver.connectWebsocket()
 
         trackHandler.loadMoreTracks()
     }, [])
@@ -68,7 +74,7 @@ export const Home = (props: HomeProps) => {
     }
 
     return (
-        <TrackHandlerContext.Provider value={trackHandler}>
+        <TrackContext.Provider value={{trackHandler: trackHandler, trackReceiver: trackReceiver}}>
             <ExportModal show={exporting} onHide={() => setExporting(false)}/>
 
             <Navbar bg="dark" variant="dark">
@@ -122,6 +128,6 @@ export const Home = (props: HomeProps) => {
                     </Col>
                 </Row>
             </Container>
-        </TrackHandlerContext.Provider>
+        </TrackContext.Provider>
     )
 }

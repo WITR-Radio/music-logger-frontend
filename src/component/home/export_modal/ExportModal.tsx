@@ -4,7 +4,7 @@ import {Button, Col, Dropdown, Form, Modal, Row} from "react-bootstrap";
 import SearchDateContext from "../../contexts/SearchDate";
 import {CustomToggle, DropdownDate} from "../../dropdown_date/DropdownDate";
 import {prettyFormatDate} from "../../../logic/date_utils";
-import {REQUEST_URL} from "../../../logic/requests";
+import {REQUEST_URL} from "../../App";
 
 interface ExportModalProps {
     show: boolean
