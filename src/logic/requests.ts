@@ -1,4 +1,5 @@
 export const REQUEST_URL = process.env.REACT_APP_API_URL ?? ''
+export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL ?? ''
 
 export function fetchUrl(absolutePath: string, params?: Record<string, string>,
                          init?: RequestInit | undefined): Promise<Response> {

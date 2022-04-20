@@ -4,7 +4,7 @@ import {Button, Card, Col, Dropdown, Form, Row} from "react-bootstrap";
 import SearchDateContext from "../../contexts/SearchDate";
 import {CustomToggle, DropdownDate} from "../../dropdown_date/DropdownDate";
 import {prettyFormatDate} from "../../../logic/date_utils";
-import TrackHandlerContext from "../../../../../music-logger-service/src/context";
+import {TrackHandlerContext} from 'music-logger-service';
 
 export const Search = () => {
     const [startDate, setStartDate] = useState<Date | undefined>()
@@ -16,6 +16,7 @@ export const Search = () => {
     const searchTitleRef = createRef<HTMLInputElement>()
 
     function handleSearch() {
+        // TODO: Something is wrong with these `Date | undefined` types?
         trackHandler.searchTracks(searchArtistRef.current?.value, searchTitleRef.current?.value, startDate, endDate)
     }
 

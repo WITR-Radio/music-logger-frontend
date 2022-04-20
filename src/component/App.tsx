@@ -3,9 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Home} from "./home/Home";
 import GroupsContext, {getGroups} from "./contexts/Groups";
 import {Route, Routes} from 'react-router';
-import TrackHandlerContext from "../../../music-logger-service/src/context";
-import {TrackHandler} from "../../../music-logger-service/src";
-import {REQUEST_URL} from "../logic/requests";
 
 function App() {
     const [groups, setGroups] = useState<string[]>([])

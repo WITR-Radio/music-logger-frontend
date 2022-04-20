@@ -4,7 +4,7 @@ import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
 import {fetchApi} from "../../../logic/requests";
-import {Track} from "../../../../../music-logger-service/src";
+import {Track} from "music-logger-service";
 
 interface EditRowProps {
     track: Track

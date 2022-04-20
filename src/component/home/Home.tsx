@@ -1,15 +1,14 @@
 import React, {Fragment, useEffect, useState} from 'react'
 import './Home.scss'
 import {Button, Col, Container, FormControl, Nav, Navbar, Row, Table} from "react-bootstrap";
-import {REQUEST_URL} from "../../logic/requests";
+import {REQUEST_URL, WEBSOCKET_URL} from "../../logic/requests";
 import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
 import {AddRow} from "./add_row/AddRow";
 import {getTableColor} from "../contexts/Groups";
-import {Track, TrackHandler} from "../../../../music-logger-service/src";
-import TrackHandlerContext from "../../../../music-logger-service/src/context";
+import {Track, TrackHandler, TrackHandlerContext} from "music-logger-service";
 
 type AddRowInfo = {
     id: number
@@ -25,7 +24,7 @@ export const Home = (props: HomeProps) => {
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
-    const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, ''))
+    const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, WEBSOCKET_URL))
     let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
