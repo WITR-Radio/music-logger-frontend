@@ -3,15 +3,12 @@ import './AddRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
-import {Track} from "../../../logic/objects";
-import {fetchApi} from "../../../logic/requests";
+import TrackHandlerContext from "../../../../../music-logger-service/src/context";
 
 interface AddRowProps {
     id: number
     event: boolean
-    underground: boolean
-    removeRow: () => void
-    addTrack: (track: Track | undefined) => void
+    addComplete: () => void
 }
 
 export const AddRow = (props: AddRowProps) => {
@@ -21,28 +18,15 @@ export const AddRow = (props: AddRowProps) => {
     const [date, setDate] = useState<Date>(new Date())
 
     const groups = useContext(GroupsContext)
+    const trackHandler = useContext(TrackHandlerContext)
 
-    function submitAdd() {
-        let title = titleRef.current?.value ?? ''
-        let artist = artistRef.current?.value ?? ''
-        let group = groupRef.current?.value ?? ''
+    function submitAdd(): void {
+        trackHandler.submitAdd(titleRef.current?.value, artistRef.current?.value, groupRef.current?.value, date, props.event)
+            .finally(props.addComplete)
+    }
 
-        return fetchApi('/tracks/add', {underground: `${props.underground}`}, {
-            method: 'POST',
-            body: JSON.stringify({
-                'title': title,
-                'artist': artist,
-                'group': props.event ? 'Event' : group,
-                'time': date.getTime()
-            })
-        }).then(async res => {
-            if (res.status != 200) {
-                console.error(`[tracks/add] Erroneous status of ${res.status}: ${await res.json()}`)
-                return
-            }
-
-            props.addTrack(Track.fromJSON(await res.json()))
-        }).finally(() => props.addTrack(undefined))
+    function cancelAdd(): void {
+        props.addComplete()
     }
 
     return (
@@ -62,7 +46,7 @@ export const AddRow = (props: AddRowProps) => {
             <td>
                 <div className="d-flex justify-content-end">
                     <Button variant="success" size="sm" className="me-2" onClick={() => submitAdd()}>Add</Button>
-                    <Button variant="danger" size="sm" onClick={() => props.addTrack(undefined)}>Cancel</Button>
+                    <Button variant="danger" size="sm" onClick={() => cancelAdd()}>Cancel</Button>
                 </div>
             </td>
         </tr>

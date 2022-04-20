@@ -1,53 +1,22 @@
-import React, {createRef, useState} from 'react'
+import React, {createRef, useContext, useState} from 'react'
 import './Search.scss'
 import {Button, Card, Col, Dropdown, Form, Row} from "react-bootstrap";
 import SearchDateContext from "../../contexts/SearchDate";
 import {CustomToggle, DropdownDate} from "../../dropdown_date/DropdownDate";
 import {prettyFormatDate} from "../../../logic/date_utils";
-import {originalListUrl} from "../Home";
+import TrackHandlerContext from "../../../../../music-logger-service/src/context";
 
-interface SearchProps {
-
-    /**
-     * Loads tracks in the homepage with the given URL. If anything is being searched, `searching` is true. This is
-     * used for auto-updating tracks.
-     *
-     * @param url The full URL of the track listing
-     * @param searching If anything is being searched (false for default listing)
-     */
-    loadTracks: (url: string, searching: boolean) => Promise<any>
-}
-
-export const Search = (props: SearchProps) => {
+export const Search = () => {
     const [startDate, setStartDate] = useState<Date | undefined>()
     const [endDate, setEndDate] = useState<Date | undefined>()
+
+    const trackHandler = useContext(TrackHandlerContext)
 
     const searchArtistRef = createRef<HTMLInputElement>()
     const searchTitleRef = createRef<HTMLInputElement>()
 
-    function handleSearch(): Promise<any> {
-        let urlQuery = new URLSearchParams({count: '5'})
-        let searching = false
-
-        let artist = searchArtistRef.current?.value ?? ''
-        if (artist != '') {
-            searching = true
-            urlQuery.append('artist', artist)
-        }
-
-        let title = searchTitleRef.current?.value ?? ''
-        if (title != '') {
-            searching = true
-            urlQuery.append('song', title)
-        }
-
-        if (startDate != undefined && endDate != undefined) {
-            searching = true
-            urlQuery.append('start', startDate.getTime().toString())
-            urlQuery.append('end', endDate.getTime().toString())
-        }
-
-        return props.loadTracks(`${originalListUrl}?${urlQuery}`, searching)
+    function handleSearch() {
+        trackHandler.searchTracks(searchArtistRef.current?.value, searchTitleRef.current?.value, startDate, endDate)
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {

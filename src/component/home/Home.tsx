@@ -1,16 +1,15 @@
 import React, {Fragment, useEffect, useState} from 'react'
 import './Home.scss'
 import {Button, Col, Container, FormControl, Nav, Navbar, Row, Table} from "react-bootstrap";
-import {Track} from "../../logic/objects";
-import {fetchApi, fetchUrl, REQUEST_URL} from "../../logic/requests";
+import {REQUEST_URL} from "../../logic/requests";
 import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
 import {AddRow} from "./add_row/AddRow";
 import {getTableColor} from "../contexts/Groups";
-
-export const originalListUrl = `${REQUEST_URL}/tracks/list`
+import {Track, TrackHandler} from "../../../../music-logger-service/src";
+import TrackHandlerContext from "../../../../music-logger-service/src/context";
 
 type AddRowInfo = {
     id: number
@@ -26,71 +25,14 @@ export const Home = (props: HomeProps) => {
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
-    const [searching, setSearching] = useState<boolean>(false)
-    const [nextUrl, setNextUrl] = useState(`${originalListUrl}?count=5&underground=${props.underground}`)
+    const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, ''))
     let addRowId = 0; // To be incremented for every AddRow used
 
     useEffect(() => {
-        try {
+        trackHandler.connectWebsocket()
 
-            const webSocket = new WebSocket("ws://localhost:5000/api/tracks/stream");
-
-            webSocket.onmessage = (event: MessageEvent) => {
-                if (!searching) {
-                    addTrack(0, Track.fromJSON(JSON.parse(event.data)))
-                }
-            };
-
-            webSocket.onerror = (error) => {
-                console.log(error);
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
-        loadTracks()
+        trackHandler.loadMoreTracks()
     }, [])
-
-    function loadTracks(): Promise<any> {
-        return loadTracksFromUrl(nextUrl)
-    }
-
-    function loadTracksFromUrl(url: string, overrideList: boolean = false, searching: boolean = false): Promise<any> {
-        setSearching(searching)
-        return fetchUrl(url)
-            .then(async res => {
-                if (res.status != 200) {
-                    console.error(`[tracks/list] Erroneous status of ${res.status}: ${await res.json()}`)
-                    return []
-                }
-
-                let json = await res.json()
-
-                // @ts-ignore
-                setNextUrl(json['_links']['next'])
-
-                let tracks = json['tracks'].map((track: any) => Track.fromJSON(track))
-
-                if (overrideList) {
-                    setTracks(tracks)
-                } else {
-                    setTracks(old => [...old, ...tracks])
-                }
-            })
-    }
-
-    function deleteTrack(track: Track) {
-        return fetchApi('/tracks/delete', {id: track.id.toString(), underground: `${props.underground}`}, {
-            method: 'DELETE'
-        }).then(async res => {
-            if (res.status != 200) {
-                console.error(`[tracks/remove] Erroneous status of ${res.status}: ${await res.json()}`)
-                return
-            }
-
-            setTracks(old => old.filter(oldTrack => oldTrack.id != track.id))
-        })
-    }
 
     function displayRow(track: Track): JSX.Element {
         return (
@@ -107,7 +49,7 @@ export const Home = (props: HomeProps) => {
                         <Button variant="primary" size="sm" className="me-2" onClick={() => {
                             setEditingTrack(track);
                         }}>Edit</Button>
-                        <Button variant="danger" size="sm" onClick={() => deleteTrack(track)}>Delete</Button>
+                        <Button variant="danger" size="sm" onClick={() => trackHandler.deleteTrack(track)}>Delete</Button>
                     </div>
                 </td>
             </tr>
@@ -122,28 +64,12 @@ export const Home = (props: HomeProps) => {
         setAddingRows(old => old.filter(i => i.id != id))
     }
 
-    function addTrack(addRowId: number, track: Track | undefined) {
-        if (track == undefined) {
-            removeAddRow(addRowId)
-            return
-        }
-
-        // Don't add if a duplicate
-        setTracks(old => {
-            if (old.findIndex(t => t.id == track.id) === -1) {
-                return [track, ...old]
-            } else {
-                return old
-            }
-        })
-    }
-
     function onClickAdd(event: boolean) {
         setAddingRows(old => [{id: addRowId++, event: event}, ...old])
     }
 
     return (
-        <Fragment>
+        <TrackHandlerContext.Provider value={trackHandler}>
             <ExportModal show={exporting} onHide={() => setExporting(false)}/>
 
             <Navbar bg="dark" variant="dark">
@@ -164,7 +90,7 @@ export const Home = (props: HomeProps) => {
                     <h1>{props.underground ? 'Underground' : 'FM'} Playlist</h1>
                 </Container>
 
-                <Search loadTracks={(url, searching) => loadTracksFromUrl(url, true, searching)}/>
+                <Search/>
 
                 <div className="justify-content-md-center d-flex my-3">
                     <Button className="me-2" variant="primary" onClick={() => onClickAdd(false)}>
@@ -187,16 +113,16 @@ export const Home = (props: HomeProps) => {
                     </tr>
                     </thead>
                     <tbody>
-                        {addingRows.map(i => <AddRow key={i.id} id={i.id} event={i.event} underground={props.underground} removeRow={() => removeAddRow(i.id)} addTrack={(track) => addTrack(i.id, track)}/>)}
+                        {addingRows.map(i => <AddRow key={i.id} id={i.id} event={i.event} addComplete={() => removeAddRow(i.id)}/>)}
                         {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
                     </tbody>
                 </Table>
                 <Row className="justify-content-md-center mb-4">
                     <Col md="auto">
-                        <Button variant="secondary" onClick={() => loadTracks()}>Load More</Button>
+                        <Button variant="secondary" onClick={() => trackHandler.loadMoreTracks()}>Load More</Button>
                     </Col>
                 </Row>
             </Container>
-        </Fragment>
+        </TrackHandlerContext.Provider>
     )
 }
