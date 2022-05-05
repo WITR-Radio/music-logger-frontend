@@ -4,6 +4,8 @@
  * @param length The (minimum) length the number should be
  * @returns The padded number
  */
+import moment from "moment";
+
 export function padNum(num: number, length: number): string {
     return `${num}`.padStart(length, '0')
 }
@@ -35,7 +37,5 @@ export function formatDate(date: Date): string {
  * @returns The formatted date
  */
 export function prettyFormatDate(date: Date): string {
-    let am = date.getHours() < 12
-    let hours = date.getHours() - (!am ? 12 : 0)
-    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${hours}:${padNum(date.getMinutes(), 2)} ${am ? 'AM' : 'PM'}`
+    return moment(date).format('M/D/YYYY hh:mm A')
 }

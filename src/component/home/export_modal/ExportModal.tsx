@@ -8,6 +8,7 @@ import {REQUEST_URL} from "../../App";
 
 interface ExportModalProps {
     show: boolean
+    underground: boolean
     onHide: () => void
 }
 
@@ -35,6 +36,8 @@ export const ExportModal = (props: ExportModalProps) => {
             urlParams.append('start', startDate.getTime().toString())
             urlParams.append('end', endDate.getTime().toString())
         }
+
+        urlParams.append('underground', `${props.underground}`)
 
         let paramString = urlParams.toString()
         if (paramString.length > 0) {

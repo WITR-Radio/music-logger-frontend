@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Home} from "./home/Home";
 import GroupsContext from "./contexts/Groups";
 import {Route, Routes} from 'react-router';
-import {getGroups} from "music-logger-service";
+import {getGroups} from "@witr-radio/music-logger-service";
 
 export const REQUEST_URL = process.env.REACT_APP_API_URL ?? ''
 export const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL ?? ''

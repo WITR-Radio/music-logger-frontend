@@ -1,14 +1,15 @@
 import React, {Fragment, useEffect, useState} from 'react'
 import './Home.scss'
-import {Button, Col, Container, FormControl, Nav, Navbar, Row, Table} from "react-bootstrap";
+import {Button, Col, Container, Nav, Navbar, Row, Table} from "react-bootstrap";
 import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
 import {AddRow} from "./add_row/AddRow";
 import {getTableColor} from "../contexts/Groups";
-import {Track, TrackHandler, TrackContext, TrackReceiver} from "music-logger-service";
+import {Track, TrackContext, TrackHandler, TrackReceiver} from "@witr-radio/music-logger-service";
 import {REQUEST_URL, TRACKS_PER_PAGE, WEBSOCKET_URL} from "../App";
+import {classes} from "../../logic/utility";
 
 type AddRowInfo = {
     id: number
@@ -24,14 +25,17 @@ export const Home = (props: HomeProps) => {
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
     const [exporting, setExporting] = useState<boolean>(false)
+    const [addRowId, setAddRowId] = useState<number>(0)
     const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, TRACKS_PER_PAGE))
-    const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, track => {
+    const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, props.underground, false, track => {
         if (!trackHandler.searching) {
             trackHandler.manualAddTrack(track)
         }
     }))
 
-    let addRowId = 0; // To be incremented for every AddRow used
+    function isAnyModifying(): boolean {
+        return editingTrack != undefined || addingRows.length > 0
+    }
 
     useEffect(() => {
         trackReceiver.connectWebsocket()
@@ -44,13 +48,13 @@ export const Home = (props: HomeProps) => {
             <tr key={track.id} className={`${getTableColor(track.group)} align-middle`}>
                 <td colSpan={track.isEvent() ? 3 : 1}>{track.artist}</td>
                 {!track.isEvent() && <Fragment>
-                    <td>{track.title}</td>
+                    <td className="title">{track.title}</td>
                     <td>{track.group}</td>
                 </Fragment>}
                 <td>{prettyFormatDate(track.time)}</td>
                 <td>
                     <div className="d-flex justify-content-end">
-                        {track.streaming.map(link => <a key={link.link} className="btn btn-outline-success me-2" href={link.link} target="_blank" rel="noreferrer" title="Spotify Link">Spotify</a>)}
+                        {/*{track.streaming.map(link => <a key={link.link} className="btn btn-outline-success me-2" href={link.link} target="_blank" rel="noreferrer" title="Spotify Link">Spotify</a>)}*/}
                         <Button variant="primary" size="sm" className="me-2" onClick={() => {
                             setEditingTrack(track);
                         }}>Edit</Button>
@@ -70,12 +74,13 @@ export const Home = (props: HomeProps) => {
     }
 
     function onClickAdd(event: boolean) {
-        setAddingRows(old => [{id: addRowId++, event: event}, ...old])
+        setAddingRows(old => [{id: addRowId, event: event}, ...old])
+        setAddRowId(oldId => oldId + 1)
     }
 
     return (
         <TrackContext.Provider value={{trackHandler: trackHandler, trackReceiver: trackReceiver}}>
-            <ExportModal show={exporting} onHide={() => setExporting(false)}/>
+            <ExportModal show={exporting} onHide={() => setExporting(false)} underground={props.underground}/>
 
             <Navbar bg="dark" variant="dark">
                 <Container fluid>
@@ -107,21 +112,23 @@ export const Home = (props: HomeProps) => {
 
                 </div>
 
-                <Table hover>
-                    <thead>
-                    <tr>
-                        <th scope="col">Artist</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Play Time</th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                <div className={classes('table-wrapper', ['wide-table', isAnyModifying()])}>
+                    <Table hover>
+                        <thead>
+                        <tr>
+                            <th scope="col" className="artist">Artist</th>
+                            <th scope="col" className="title">Title</th>
+                            <th scope="col" className="type">Type</th>
+                            <th scope="col" className="time">Play Time</th>
+                            <th scope="col" className="buttons"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
                         {addingRows.map(i => <AddRow key={i.id} id={i.id} event={i.event} addComplete={() => removeAddRow(i.id)}/>)}
                         {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
-                    </tbody>
-                </Table>
+                        </tbody>
+                    </Table>
+                </div>
                 <Row className="justify-content-md-center mb-4">
                     <Col md="auto">
                         <Button variant="secondary" onClick={() => trackHandler.loadMoreTracks()}>Load More</Button>

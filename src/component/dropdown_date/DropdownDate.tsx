@@ -22,9 +22,12 @@ export const DropdownDate = React.forwardRef<HTMLDivElement>(
     (props, ref) => {
         const {date, setDate} = useContext(SearchDateContext)
 
+        // @ts-ignore
+        let classes = props.className
+
         return (
             <div
-                {...props}
+                className={classes}
                 ref={ref}>
                 <DateTimeChooser date={date ?? new Date()} onChange={setDate}/>
             </div>

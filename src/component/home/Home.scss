@@ -4,3 +4,45 @@
         display: inline-block;
     }
 }
+
+.table-wrapper {
+    overflow-x: scroll;
+
+    & > table {
+        min-width: 696px;
+
+        th {
+            &.artist {
+                width: 25%
+            }
+
+            &.title {
+                width: 25%
+            }
+
+            &.type {
+                width: 15%;
+                max-width: 125px;
+            }
+        }
+
+        td {
+            &.artist {
+                overflow-wrap: break-word;
+                width: 25%
+            }
+
+            &.title {
+                width: 25%
+            }
+
+            &.type {
+                width: 125px;
+            }
+        }
+    }
+
+    &.wide-table > table {
+        min-width: 1046px;
+    }
+}

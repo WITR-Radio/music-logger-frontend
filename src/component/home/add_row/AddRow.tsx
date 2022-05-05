@@ -3,7 +3,7 @@ import './AddRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
-import {TrackContext} from "music-logger-service";
+import {TrackContext} from "@witr-radio/music-logger-service";
 
 interface AddRowProps {
     id: number
