@@ -38,7 +38,7 @@ export const Home = (props: HomeProps) => {
     }
 
     useEffect(() => {
-        trackReceiver.connectWebsocket()
+        trackReceiver.connectWebsocket(true)
 
         trackHandler.loadMoreTracks()
     }, [])

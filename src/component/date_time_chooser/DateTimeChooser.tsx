@@ -17,14 +17,10 @@ export const DateTimeChooser = (props: DateTimeChooserProps) => {
         handleHour,
         handleMinute,
         handleAmPm,
-        processHour,
+        defaultHour,
         calendarDate,
         am
     } = useTimeController({date: props.date, onChange: props.onChange})
-
-    function defaultHour() {
-        return moment(props.date).format('hh')
-    }
 
     return (
         <div className="DateTimeChooser">

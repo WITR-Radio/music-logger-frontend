@@ -29,6 +29,7 @@ export const EditRow = (props: EditRowProps) => {
         let group = groupRef.current?.value ?? ''
 
         trackHandler.updateTrack(id, track, title, artist, group, date)
+        props.stopEditing()
     }
 
     return (
