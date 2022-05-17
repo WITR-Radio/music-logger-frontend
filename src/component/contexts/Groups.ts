@@ -4,7 +4,8 @@ const GroupsContext = createContext<string[]>([])
 export default GroupsContext
 
 export const TableGroupColors = new Map<string, string>([
-    ['Event', 'table-primary']
+    ['Event', 'table-primary'],
+    ['Specialty Show', 'table-info']
 ])
 
 /**

@@ -29,6 +29,21 @@ export const EditRow = (props: EditRowProps) => {
         let group = groupRef.current?.value ?? ''
 
         trackHandler.updateTrack(id, track, title, artist, group, date)
+
+        props.updateTracks((oldTracks: Track[]) => {
+            let editedTrack = oldTracks.find(track => track.id == id)
+            if (editedTrack == undefined) {
+                console.error('Edited track not found!');
+                return oldTracks
+            }
+
+            editedTrack.title = title
+            editedTrack.artist = artist
+            editedTrack.group = group
+            editedTrack.time = date
+            return oldTracks
+        })
+
         props.stopEditing()
     }
 

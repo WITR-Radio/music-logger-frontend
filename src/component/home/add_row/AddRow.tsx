@@ -21,7 +21,7 @@ export const AddRow = (props: AddRowProps) => {
     const {trackHandler} = useContext(TrackContext)
 
     function submitAdd(): void {
-        trackHandler.submitAdd(titleRef.current?.value, artistRef.current?.value, groupRef.current?.value, date, props.event)
+        trackHandler.submitAdd(props.event ? '' : titleRef.current?.value, artistRef.current?.value, groupRef.current?.value, date, props.event)
             .finally(props.addComplete)
     }
 
