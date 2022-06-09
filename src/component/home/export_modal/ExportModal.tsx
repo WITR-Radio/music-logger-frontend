@@ -44,7 +44,7 @@ export const ExportModal = (props: ExportModalProps) => {
             paramString = `?${paramString}`
         }
 
-        window.open(`${REQUEST_URL}/export${paramString}`, '_blank')
+        window.open(`${REQUEST_URL}/api/export${paramString}`, '_blank')
         props.onHide()
     }
 
