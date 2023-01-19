@@ -27,9 +27,9 @@ export const Home = (props: HomeProps) => {
     const [exporting, setExporting] = useState<boolean>(false)
     const [addRowId, setAddRowId] = useState<number>(0)
     const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, TRACKS_PER_PAGE))
-    const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, props.underground, false, track => {
+    const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, props.underground, trackBroadcast => {
         if (!trackHandler.searching) {
-            trackHandler.manualAddTrack(track)
+            trackHandler.manualAddTrack(trackBroadcast.track)
         }
     }))
 
@@ -38,7 +38,7 @@ export const Home = (props: HomeProps) => {
     }
 
     useEffect(() => {
-        trackReceiver.connectWebsocket(true)
+        trackReceiver.connectWebsocket()
 
         trackHandler.loadMoreTracks()
     }, [])
