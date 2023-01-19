@@ -27,8 +27,9 @@
     "moment": "^2.29.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "sh ./scripts/start",
+    "build": "sh ./scripts/build",
+    "build-prod": "sh ./scripts/build-prod",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

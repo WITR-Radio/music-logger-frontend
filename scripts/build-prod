@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export $(grep -v '^#' .production.env | xargs) && react-scripts build

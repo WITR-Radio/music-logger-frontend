@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export $(grep -v '^#' .staging.env | xargs) && react-scripts build
