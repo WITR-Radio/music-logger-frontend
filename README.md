@@ -25,7 +25,21 @@ Next, create a GitHub Token with `packages` access, and set it as an environment
 
 ## Running
 
-Once the above steps are complete, ensure you have set up the [dev-environments](https://github.com/WITR-Radio/dev-environments/tree/master/primary) for `primary`. Start the environment, and run the following command in this repository to bring it to life:
+The next step will depend on if you are running this yourself independently, or internally at WITR. We have containerized development environments to keep application state version controlled across all projects, which is not open source quite yet (stay tuned!).
+
+<details>
+<summary><b>Independently</b></summary></br>
+
+Set up and start a Postgres (or similar) database, setting its credentials/URL to the relevant environment variables.
+</details>
+
+<details>
+<summary><b>Internally</b></summary></br>
+
+Ensure you have set up the [dev-environments](https://github.com/WITR-Radio/dev-environments/tree/master/primary) for `primary`, and start the environment.
+</details>
+
+When the proper step above has been completed, run the following command in this repository to bring it to life:
 
 ```bash
 npm run start
