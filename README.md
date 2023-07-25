@@ -2,6 +2,8 @@
 
 The frontend for the music logger, written in React and TypeScript.
 
+![Screenshot of main frontend page](https://witr.rit.edu/images/screenshots/frontend.png)
+
 ## Setting Up
 
 Before using, the environment variable files must be created from their templates. The reason for this is so the ones being used aren't tracked by git. To do this, run the following in a bash shell at the root of the project:
@@ -35,11 +37,10 @@ Set up and start a Postgres (or similar) database, setting its credentials/URL t
 
 <details>
 <summary><b>Internally</b></summary></br>
-
 Ensure you have set up the [dev-environments](https://github.com/WITR-Radio/dev-environments/tree/master/primary) for `primary`, and start the environment.
 </details>
 
-When the proper step above has been completed, run the following command in this repository to bring it to life:
+When the proper step above has been completed, populate the environment variables and run the following command in this repository to bring it to life:
 
 ```bash
 npm run start
