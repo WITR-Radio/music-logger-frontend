@@ -20,13 +20,17 @@ export const AddRow = (props: AddRowProps) => {
     const groups = useContext(GroupsContext)
     const {trackHandler} = useContext(TrackContext)
 
-    function submitAdd(): void {
+    const submitAdd = (): void => {
         trackHandler.submitAdd(props.event ? '' : titleRef.current?.value, artistRef.current?.value, groupRef.current?.value, date, props.event)
             .finally(props.addComplete)
     }
 
-    function cancelAdd(): void {
+    const cancelAdd = (): void => {
         props.addComplete()
+    }
+
+    const setTimeToNow = (): void => {
+        setDate(new Date())
     }
 
     return (
@@ -45,6 +49,7 @@ export const AddRow = (props: AddRowProps) => {
             </td>
             <td>
                 <div className="d-flex justify-content-end">
+                    <Button variant="primary" size="sm" className="me-2" title="Set Current Time" onClick={setTimeToNow}><i className="bi bi-clock"></i></Button>
                     <Button variant="success" size="sm" className="me-2" onClick={() => submitAdd()}>Add</Button>
                     <Button variant="danger" size="sm" onClick={() => cancelAdd()}>Cancel</Button>
                 </div>

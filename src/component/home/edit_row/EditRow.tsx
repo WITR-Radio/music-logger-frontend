@@ -23,7 +23,7 @@ export const EditRow = (props: EditRowProps) => {
     const groups = useContext(GroupsContext)
     const {trackHandler} = useContext(TrackContext)
 
-    function submitEdit(id: number) {
+    const submitEdit = (id: number): void  => {
         let title = titleRef.current?.value ?? ''
         let artist = artistRef.current?.value ?? ''
         let group = groupRef.current?.value ?? ''
@@ -47,6 +47,10 @@ export const EditRow = (props: EditRowProps) => {
         props.stopEditing()
     }
 
+    const setTimeToNow = (): void => {
+        setDate(new Date())
+    }
+
     return (
         <tr key={props.track.id} className="EditRow">
             <td colSpan={track.isEvent() ? 3 : 1}><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
@@ -63,6 +67,7 @@ export const EditRow = (props: EditRowProps) => {
             </td>
             <td>
                 <div className="d-flex justify-content-end">
+                    <Button variant="primary" size="sm" className="me-2" title="Set Current Time" onClick={setTimeToNow}><i className="bi bi-clock"></i></Button>
                     <Button variant="primary" size="sm" className="me-2" onClick={() => submitEdit(track.id)}>Update</Button>
                     <Button variant="danger" size="sm" onClick={() => props.stopEditing()}>Cancel</Button>
                 </div>
