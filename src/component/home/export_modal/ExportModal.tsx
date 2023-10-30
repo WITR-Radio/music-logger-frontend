@@ -1,5 +1,4 @@
 import React, {createRef, useState} from 'react'
-import './ExportModal.scss'
 import {Button, Col, Dropdown, Form, Modal, Row} from "react-bootstrap";
 import SearchDateContext from "../../contexts/SearchDate";
 import {CustomToggle, DropdownDate} from "../../dropdown_date/DropdownDate";

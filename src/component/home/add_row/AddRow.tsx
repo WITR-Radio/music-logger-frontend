@@ -1,14 +1,28 @@
-import React, {createRef, Fragment, useContext, useState} from 'react'
+import React, {createRef, Fragment, useContext, useEffect, useState} from 'react'
 import './AddRow.scss'
 import {Button, Form, FormControl} from "react-bootstrap";
 import {DateTimeChooser} from "../../date_time_chooser/DateTimeChooser";
 import GroupsContext from "../../contexts/Groups";
 import {TrackContext} from "@witr-radio/music-logger-service";
 
+/**
+ * Initial data in an adding row.
+ */
+export interface PrefilledTrack {
+    artist: string
+    title: string
+    group: string
+}
+
 interface AddRowProps {
     id: number
     event: boolean
     addComplete: () => void
+
+    /**
+     * If set, this is the track that will initially be shown in this add row.
+     */
+    prefilledTrack?: PrefilledTrack | undefined
 }
 
 export const AddRow = (props: AddRowProps) => {
@@ -35,11 +49,11 @@ export const AddRow = (props: AddRowProps) => {
 
     return (
         <tr key={props.id} className="AddRow">
-            <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} className="form-control"/></td>
+            <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} defaultValue={props.prefilledTrack?.artist} className="form-control"/></td>
             {!props.event && <Fragment>
-                <td><FormControl ref={titleRef} className="form-control"/></td>
+                <td><FormControl ref={titleRef} defaultValue={props.prefilledTrack?.title} className="form-control"/></td>
                 <td>
-                    <Form.Select ref={groupRef} defaultValue={groups[0]}>
+                    <Form.Select ref={groupRef} defaultValue={props.prefilledTrack?.group}>
                         {groups.map(group => <option key={group} value={group}>{group}</option>)}
                     </Form.Select>
                 </td>
