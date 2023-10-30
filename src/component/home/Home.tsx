@@ -5,15 +5,27 @@ import {prettyFormatDate} from "../../logic/date_utils";
 import {EditRow} from "./edit_row/EditRow";
 import {Search} from "./search/Search";
 import {ExportModal} from "./export_modal/ExportModal";
-import {AddRow} from "./add_row/AddRow";
+import {AddRow, PrefilledTrack} from "./add_row/AddRow";
 import {getTableColor} from "../contexts/Groups";
 import {Track, TrackContext, TrackHandler, TrackReceiver} from "@witr-radio/music-logger-service";
 import {REQUEST_URL, TRACKS_PER_PAGE, WEBSOCKET_URL} from "../App";
 import {classes} from "../../logic/utility";
+import {ImportModal} from "./import_modal/ImportModal";
+
+enum ModalShowing {
+    None,
+    Export,
+    Import
+}
 
 type AddRowInfo = {
     id: number
     event: boolean
+
+    /**
+     * If set, this is the track that will initially be shown in the add row.
+     */
+    track?: PrefilledTrack | undefined
 }
 
 interface HomeProps {
@@ -24,7 +36,8 @@ export const Home = (props: HomeProps) => {
     const [tracks, setTracks] = useState<Track[]>([])
     const [addingRows, setAddingRows] = useState<AddRowInfo[]>([]) // A list of AddRow IDs
     const [editingTrack, setEditingTrack] = useState<Track | undefined>()
-    const [exporting, setExporting] = useState<boolean>(false)
+    const [modalShown, setModalShown] = useState<ModalShowing>(ModalShowing.None)
+    const [naturalOrderAdding, setNaturalOrderAdding] = useState<boolean>(true)
     const [addRowId, setAddRowId] = useState<number>(0)
     const [trackHandler] = useState<TrackHandler>(new TrackHandler(setTracks, REQUEST_URL, props.underground, TRACKS_PER_PAGE))
     const [trackReceiver] = useState<TrackReceiver>(new TrackReceiver(WEBSOCKET_URL, props.underground, trackBroadcast => {
@@ -73,14 +86,35 @@ export const Home = (props: HomeProps) => {
         setAddingRows(old => old.filter(i => i.id != id))
     }
 
-    function onClickAdd(event: boolean) {
-        setAddingRows(old => [{id: addRowId, event: event}, ...old])
-        setAddRowId(oldId => oldId + 1)
+    const addTrackLocal = (event: boolean, prefilledTrack?: PrefilledTrack) => {
+        setAddRowId(oldId => {
+            setAddingRows(old => [{id: oldId, event: event, track: prefilledTrack}, ...old])
+            return oldId + 1;
+        })
+    }
+
+    const importTrack = (artist: string, title: string, group: string): void => {
+        addTrackLocal(false, {artist: artist, title: title, group: group})
+    }
+
+    const toggleAddTrackOrder = (): void => {
+        setNaturalOrderAdding(old => !old)
+    }
+
+    const optionallyReverse = (rows: AddRowInfo[]): AddRowInfo[] => {
+        if (naturalOrderAdding) {
+            return rows
+        }
+
+        let copy = [...rows]
+        copy.reverse()
+        return copy
     }
 
     return (
         <TrackContext.Provider value={{trackHandler: trackHandler, trackReceiver: trackReceiver}}>
-            <ExportModal show={exporting} onHide={() => setExporting(false)} underground={props.underground}/>
+            <ExportModal show={modalShown == ModalShowing.Export} onHide={() => setModalShown(ModalShowing.None)} underground={props.underground}/>
+            <ImportModal show={modalShown == ModalShowing.Import} onHide={() => setModalShown(ModalShowing.None)} underground={props.underground} importTrack={importTrack}/>
 
             <Navbar bg="dark" variant="dark">
                 <Container fluid>
@@ -90,7 +124,8 @@ export const Home = (props: HomeProps) => {
                         <Nav.Link href="/underground" active={props.underground}>UDG Playlist</Nav.Link>
                     </Nav>
                     <Nav>
-                        <Nav.Link onClick={() => setExporting(true)}>Export</Nav.Link>
+                        <Nav.Link onClick={() => setModalShown(ModalShowing.Import)}>Import</Nav.Link>
+                        <Nav.Link onClick={() => setModalShown(ModalShowing.Export)}>Export</Nav.Link>
                     </Nav>
                 </Container>
             </Navbar>
@@ -103,12 +138,14 @@ export const Home = (props: HomeProps) => {
                 <Search/>
 
                 <div className="justify-content-md-center d-flex my-3">
-                    <Button className="me-2" variant="primary" onClick={() => onClickAdd(false)}>
+                    <Button className="me-2" variant="primary" onClick={() => addTrackLocal(false)}>
                         <i className="bi bi-music-note-beamed"></i> Add Song
                     </Button>
-                    <Button variant="info" onClick={() => onClickAdd(true)}>
+                    <Button variant="info" onClick={() => addTrackLocal(true)}>
                         <i className="bi bi-calendar-event-fill"></i> Add Event
                     </Button>
+                    {addingRows.length > 1 && <Button className="ms-2" variant="primary" onClick={toggleAddTrackOrder}>
+                        <i className="bi bi-arrow-down-up"></i></Button>}
 
                 </div>
 
@@ -124,7 +161,8 @@ export const Home = (props: HomeProps) => {
                         </tr>
                         </thead>
                         <tbody>
-                        {addingRows.map(i => <AddRow key={i.id} id={i.id} event={i.event} addComplete={() => removeAddRow(i.id)}/>)}
+                        {optionallyReverse(addingRows).map(i =>
+                            <AddRow key={i.id} id={i.id} event={i.event} prefilledTrack={i.track} addComplete={() => removeAddRow(i.id)}/>)}
                         {tracks.map(track => track == editingTrack ? displayEditRow(track) : displayRow(track))}
                         </tbody>
                     </Table>
