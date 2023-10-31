@@ -52,10 +52,10 @@ export const EditRow = (props: EditRowProps) => {
     }
 
     return (
-        <tr key={props.track.id} className="EditRow">
-            <td colSpan={track.isEvent() ? 3 : 1}><FormControl ref={artistRef} className="form-control" name="artist" defaultValue={track.artist}/></td>
+        <tr key={props.track.id} className="EditRow tr-sm-vertical">
+            <td colSpan={track.isEvent() ? 3 : 1}><FormControl ref={artistRef} className="form-control placeholder-hide-lg" name="artist" defaultValue={track.artist} placeholder={track.isEvent() ? 'Event Name' : 'Artist Name'}/></td>
             {!track.isEvent() && <Fragment>
-                <td><FormControl ref={titleRef} className="form-control" name="title" defaultValue={track.title}/></td>
+                <td><FormControl ref={titleRef} className="form-control placeholder-hide-lg" name="title" defaultValue={track.title} placeholder="Title"/></td>
                 <td>
                     <Form.Select ref={groupRef} defaultValue={track.group}>
                         {groups.map(group => <option value={group}>{group}</option>)}
