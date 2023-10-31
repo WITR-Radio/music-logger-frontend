@@ -48,10 +48,10 @@ export const AddRow = (props: AddRowProps) => {
     }
 
     return (
-        <tr key={props.id} className="AddRow">
-            <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} defaultValue={props.prefilledTrack?.artist} className="form-control"/></td>
+        <tr key={props.id} className="AddRow tr-sm-vertical">
+            <td colSpan={props.event ? 3 : 1}><FormControl ref={artistRef} defaultValue={props.prefilledTrack?.artist} className="form-control placeholder-hide-lg" placeholder={props.event ? 'Event Name' : 'Artist Name'}/></td>
             {!props.event && <Fragment>
-                <td><FormControl ref={titleRef} defaultValue={props.prefilledTrack?.title} className="form-control"/></td>
+                <td><FormControl ref={titleRef} defaultValue={props.prefilledTrack?.title} className="form-control placeholder-hide-lg" placeholder="Title"/></td>
                 <td>
                     <Form.Select ref={groupRef} defaultValue={props.prefilledTrack?.group}>
                         {groups.map(group => <option key={group} value={group}>{group}</option>)}

@@ -130,7 +130,7 @@ export const Home = (props: HomeProps) => {
                 </Container>
             </Navbar>
 
-            <Container className="pt-4">
+            <div className="pt-4 col-sm-12 col-mg-10 container-lg">
                 <Container className="text-center mb-4">
                     <h1>{props.underground ? 'Underground' : 'FM'} Playlist</h1>
                 </Container>
@@ -172,7 +172,7 @@ export const Home = (props: HomeProps) => {
                         <Button variant="secondary" onClick={() => trackHandler.loadMoreTracks()}>Load More</Button>
                     </Col>
                 </Row>
-            </Container>
+            </div>
         </TrackContext.Provider>
     )
 }
